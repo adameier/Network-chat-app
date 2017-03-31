@@ -17,32 +17,33 @@ import java.util.ArrayList;
  *
  * @author mthmas016
  */
-public class Server {
+public class Server extends Thread{
     
     ServerSocket serverSocket;
     Socket clientSocket = null;
+    private static int portNum = 5678;
     DataInputStream input ;
     DataOutputStream output;
-    public  boolean isAlive=Client.isAlive;
-    private ArrayList<Socket> clientSockets = new ArrayList<>();
+
+    public  boolean isAlive = true;
+
+    private ArrayList<DataOutputStream> clientOutputStreams = new ArrayList<>();
     // Constructor.
-    public Server(int portNum){
+    public Server()
+    {
         try{
-            serverSocket = new ServerSocket(portNum);
-            System.out.println("Server started..waiting for the connection at port: \n"+portNum);
-            while (clientSockets.size()!=2){
-                clientSocket = serverSocket.accept(); //waiting for incoming connections.
-                clientSockets.add(clientSocket);
-                System.out.print("Client "+clientSockets.size()+" joined the chatroom\n");
-                input = new DataInputStream(clientSocket.getInputStream());
-                output = new DataOutputStream(clientSocket.getOutputStream());
-            }
+
+                serverSocket = new ServerSocket(portNum);
+                System.out.println("Server started..waiting for the connection at port: \n"+portNum);
+
+
 
         }
         catch(Exception e){
             System.out.println(e);
         }
     }
+
     public void closeConnection(){
     
         try{
@@ -55,32 +56,81 @@ public class Server {
             System.out.println(e);
         }
     }
-    public void readFromClients(){
-            try {
 
-                while (isAlive){
-
-                    String message2 = new DataInputStream(clientSockets.get(0).getInputStream()).readUTF();
-                    String message = input.readUTF();
-                    if (message=="quit"){
-
-                        Client.isAlive=false;
-
-                    }
-                    else{
-
-                        System.out.println("The client 2 says: "+message);
-                        output.writeUTF("The sever says: "+message);
-                        new DataOutputStream(clientSocket.getOutputStream()).writeUTF(message2);
-                        System.out.println("The client 1 says: "+message2);
-                    }
-
-                }
+    public void sendToClients(String message)
+    {
+        for (int j = 0; j<clientOutputStreams.size(); j++)
+        {
+            try
+            {
+                clientOutputStreams.get(j).writeUTF(message);
             }
-            catch (Exception e){
-                System.out.println(e);
+            catch(Exception e)
+            {
+                System.out.print(e);
             }
 
+        }
+    }
+
+    public void run()
+    {
+        String message;
+
+        try
+        {
+            input = new DataInputStream(clientSocket.getInputStream());
+            output = new DataOutputStream(clientSocket.getOutputStream());
+            clientOutputStreams.add(output);
+            message = input.readUTF();
+
+            while (!message.equals("quit"))
+            {
+                message = input.readUTF();
+                sendToClients(message);
+                System.out.print(message);
+            }
+        }
+        catch(Exception e)
+        {
+            System.out.print(e);
+        }
+
+        sendToClients("Client disconnected...");
+
+
+
+    }
+
+    public static void main(String args[])
+    {
+
+        Server s = new Server();
+        s.awaitingConnections();
+
+    }
+
+    public void awaitingConnections()
+    {
+        while(isAlive)
+        {
+            try
+            {
+                Socket newClient = serverSocket.accept();
+                System.out.print("Client connected....");
+                Server server = new Server();
+                server.clientSocket = newClient;
+                Thread serverThread = server;
+                serverThread.start();
+            }
+            catch (Exception e)
+            {
+                System.out.print(e);
+            }
+
+
+
+        }
     }
 
 }
