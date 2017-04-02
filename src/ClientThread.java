@@ -8,6 +8,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -18,8 +19,9 @@ public class ClientThread extends Thread{
     private Socket client;
     private DataOutputStream out ;
     private DataInputStream inp ;
-    public static boolean alive =true;
+    public static volatile boolean alive =true;
     String username;
+    ArrayList<String> history = new ArrayList<>();
 
     public ClientThread(String host,int port, String username) throws Exception{
         //establish a new connection. and initialise streams.
@@ -28,6 +30,7 @@ public class ClientThread extends Thread{
         out = new DataOutputStream(outToServer);
         inp = new DataInputStream(client.getInputStream());
         this.username = username;
+        out.writeUTF(username);
 
     }
 
@@ -36,21 +39,21 @@ public class ClientThread extends Thread{
         
        try {
             String line;
-            while(true){
+            while(alive){
+                System.out.println("Enter a message: ");
                 line=inp.readUTF(); //read text from input stream/from server..
-
-                if(line=="quit"){  //the server must return "quit" to close connection.
-                    break;
+                history.add(line);
+                Server.clearScreen();
+                for (String preMessage : history) {
+                    System.out.println(preMessage);
                 }
-                else{
-                    //print out the line/message.
-                    System.out.println(line);
-                }
+                
+                
             }
-            alive=false;  //used to notify the writing thread that the server ended the connection.
-            this.closeConnection();
+            //alive=false;  //used to notify the writing thread that the server ended the connection.
+            //this.closeConnection();
        } catch(Exception e){
-           System.out.println(e);
+           //System.out.println(e);
        }
    }
     public void writeToServer()throws Exception{
@@ -60,7 +63,10 @@ public class ClientThread extends Thread{
 
 //            System.out.println("Enter a message:");
             message = s.nextLine();
-            try{
+            if (message.equals("/quit")) {
+                break;
+            }
+            if(!message.equals("")) try{
                 out.writeUTF(username + ": " + message);
 
             }
@@ -68,12 +74,15 @@ public class ClientThread extends Thread{
                 System.out.println(e);
             }
         }
+        alive=false;  
+        this.closeConnection();
         
     }
     public void closeConnection() throws Exception{
-        client.close();
+        out.writeUTF("/quit");
         out.close();
         inp.close();
+        client.close();
     }
 
 
@@ -85,6 +94,9 @@ public class ClientThread extends Thread{
 //      int port = Integer.parseInt(args[1]);
         int port = 5678;
         ClientThread d = new ClientThread(serverName,port, username);
+        String welcome = "You (" + username + ") have successfully joined the chatroom.";
+        d.history.add(welcome);
+        System.out.println(welcome);
         d.start();
         d.writeToServer();
     }
