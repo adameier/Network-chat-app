@@ -1,8 +1,10 @@
 
+
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
 import java.io.PrintStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -28,12 +30,14 @@ public class Server extends Thread{
     public  boolean isAlive = true;
 
     private static volatile ArrayList<ClSv> clientsOnServer = new ArrayList<>();
+    private static volatile ArrayList<byte[]> imageArrays = new ArrayList<>();
     // Constructor.
     public Server()
     {
         try{
 
                 serverSocket = new ServerSocket(portNum);
+                System.out.println(InetAddress.getLocalHost().getHostName());
                 System.out.println("Server started..waiting for the connection at port: \n"+portNum);
 
         }
@@ -52,7 +56,7 @@ public class Server extends Thread{
                 System.out.print("Client connected....");
 
                 //create a new clientOnServer thread and start it.
-                ClSv cl = new ClSv(newClient,clientsOnServer);
+                ClSv cl = new ClSv(newClient,clientsOnServer, imageArrays);
                 cl.start();
                 clientsOnServer.add(cl);
 

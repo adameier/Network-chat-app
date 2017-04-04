@@ -4,12 +4,16 @@
  * and open the template in the editor.
  */
 
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -66,7 +70,30 @@ public class ClientThread extends Thread{
             if (message.equals("/quit")) {
                 break;
             }
-            if(!message.equals("")) try{
+            //code for sending images
+            if (message.startsWith("/send")) {
+                                          
+                String filename = "/home/m/mrxada002/Downloads/chatApp-Alfred/chatApp-Alfred/src/sponge.jpg";
+                int ex = filename.indexOf(".");
+                ex++;
+                String extension = filename.substring(ex);
+                BufferedImage img = ImageIO.read(new File(filename));
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ImageIO.write(img, extension, baos);
+                baos.flush();
+                byte[] imageBytes = baos.toByteArray();
+                int imageSize = imageBytes.length;
+                
+                System.out.println(imageSize);
+                
+                out.writeUTF(message);                                      //1: Send message
+                out.writeUTF(extension);                                    //2: Send file extension
+                out.writeInt(imageSize);                                       //3: Send image size
+                out.write(imageBytes, 0, imageSize);
+                
+                
+                
+            }else if(!message.equals("")) try{
                 out.writeUTF(username + ": " + message);
 
             }
@@ -89,13 +116,14 @@ public class ClientThread extends Thread{
     public static void main(String [] args) throws Exception{
 //        String serverName = args[0];
         //String username = args[1];
-        String username = "LYLJON002";
+        String username = "MRXADA002";
         String serverName = "localhost";
 //      int port = Integer.parseInt(args[1]);
         int port = 5678;
         ClientThread d = new ClientThread(serverName,port, username);
         String welcome = "You (" + username + ") have successfully joined the chatroom.";
         d.history.add(welcome);
+        Server.clearScreen();
         System.out.println(welcome);
         d.start();
         d.writeToServer();
