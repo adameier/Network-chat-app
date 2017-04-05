@@ -91,7 +91,7 @@ public class ClSv extends Thread{
                 }
                 //Code for receiving images
                 if (message.startsWith("/send")) {
-                    String filename = message.substring(6);
+                    String filename = "images/" + message.substring(6);
                     String extension = input.readUTF();             //2: get extension
                     int imageSize = input.readInt();                //3: get image size
                     
@@ -99,12 +99,17 @@ public class ClSv extends Thread{
                     input.readFully(imageArray);                    //4: get byte array
                     imageArrays.add(imageArray);
                     for (ClSv serv : otherClients) {
-                        if (serv!=this) {
+                        if (serv!=this)
+                        {
                             serv.imgExtension = extension;
                             serv.imageData = imageArray;
                             synchronized (serv) {
                                 serv.output.writeUTF(this.username+ " has sent an image of "+imageArray.length/1024+ " KB. Enter /download to accept it.");
                             }
+                        }
+                        else
+                        {
+                        	this.output.writeUTF("You shave successfully sent a request for other clients to download your image.");
                         }
                     }
                     

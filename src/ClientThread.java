@@ -55,7 +55,7 @@ public class ClientThread extends Thread{
                     //convert byte array to image
                     InputStream in = new ByteArrayInputStream(imageArray);
                     BufferedImage convertImage = ImageIO.read(in);
-                    ImageIO.write(convertImage, ex, new File(username + Integer.toString(dlCounter) + "." + ex));
+                    ImageIO.write(convertImage, ex, new File("images/" + username + Integer.toString(dlCounter) + "." + ex));
                     dlCounter++;
                     history.add("Image downloaded.");
                 } else {
@@ -87,7 +87,7 @@ public class ClientThread extends Thread{
             //code for sending images
             if (message.startsWith("/send")) {
                                           
-                String filename = message.substring(6);
+                String filename = "images/" + message.substring(6);
                 int ex = filename.indexOf(".");
                 ex++;
                 String extension = filename.substring(ex);
