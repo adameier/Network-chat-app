@@ -88,7 +88,7 @@ public class ClientThread2 extends Thread{
     public static void main(String [] args) throws Exception{
 //        String serverName = args[0];
         //String username = args[1];
-        String username = "NWTDAN002";
+        String username = "NRRRRR002";
         String serverName = "localhost";
 //      int port = Integer.parseInt(args[1]);
         int port = 5678;

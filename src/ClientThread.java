@@ -5,11 +5,7 @@
  */
 
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -26,6 +22,7 @@ public class ClientThread extends Thread{
     public static volatile boolean alive =true;
     String username;
     ArrayList<String> history = new ArrayList<>();
+    int dlCounter =1;
 
     public ClientThread(String host,int port, String username) throws Exception{
         //establish a new connection. and initialise streams.
@@ -45,8 +42,25 @@ public class ClientThread extends Thread{
             String line;
             while(alive){
                 System.out.println("Enter a message: ");
+
                 line=inp.readUTF(); //read text from input stream/from server..
-                history.add(line);
+
+                if (line.startsWith("/download")) {         //1: get download message
+                    String ex = inp.readUTF();              //2: get file extension
+                    int imgSize = inp.readInt();            //3: Get image size
+                    byte[] imageArray = new byte[imgSize];
+                    inp.readFully(imageArray);              //4: Get byte array
+                    //System.out.println("bytes received");
+
+                    //convert byte array to image
+                    InputStream in = new ByteArrayInputStream(imageArray);
+                    BufferedImage convertImage = ImageIO.read(in);
+                    ImageIO.write(convertImage, ex, new File(username + Integer.toString(dlCounter) + "." + ex));
+                    dlCounter++;
+                    history.add("Image downloaded.");
+                } else {
+                    history.add(line);
+                }
                 Server.clearScreen();
                 for (String preMessage : history) {
                     System.out.println(preMessage);
@@ -73,27 +87,42 @@ public class ClientThread extends Thread{
             //code for sending images
             if (message.startsWith("/send")) {
                                           
-                String filename = "/home/m/mrxada002/Downloads/chatApp-Alfred/chatApp-Alfred/src/sponge.jpg";
+                String filename = message.substring(6);
                 int ex = filename.indexOf(".");
                 ex++;
                 String extension = filename.substring(ex);
+                //convert image to byte array
                 BufferedImage img = ImageIO.read(new File(filename));
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ImageIO.write(img, extension, baos);
                 baos.flush();
                 byte[] imageBytes = baos.toByteArray();
+                baos.close();
                 int imageSize = imageBytes.length;
                 
-                System.out.println(imageSize);
+                //System.out.println(imageSize);
                 
                 out.writeUTF(message);                                      //1: Send message
                 out.writeUTF(extension);                                    //2: Send file extension
-                out.writeInt(imageSize);                                       //3: Send image size
-                out.write(imageBytes, 0, imageSize);
+                out.writeInt(imageSize);                                    //3: Send image size
+                out.write(imageBytes, 0, imageSize);                        //4: send byte array
+
+                Server.clearScreen();
+                for (String preMessage : history) {
+                    System.out.println(preMessage);
+                }
+                System.out.println("Enter a message: ");
+
                 
-                
-                
-            }else if(!message.equals("")) try{
+            }else if (message.startsWith("/download")) {
+                out.writeUTF(message);
+                Server.clearScreen();
+                for (String preMessage : history) {
+                    System.out.println(preMessage);
+                }
+                System.out.println("Enter a message: ");
+
+            } else if(!message.equals("")) try{
                 out.writeUTF(username + ": " + message);
 
             }
