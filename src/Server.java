@@ -23,7 +23,7 @@ public class Server extends Thread{
     
     ServerSocket serverSocket;
     Socket clientSocket = null;
-    private static int portNum = 5678;
+    private int portNum = 5678;
     DataInputStream input ;
     DataOutputStream output;
 
@@ -32,10 +32,12 @@ public class Server extends Thread{
     private static volatile ArrayList<ClSv> clientsOnServer = new ArrayList<>();
     private static volatile ArrayList<byte[]> imageArrays = new ArrayList<>();
     // Constructor.
-    public Server()
+    public Server(int port)
     {
-        try{
-
+        try
+        {
+               
+                this.portNum = port;  
                 serverSocket = new ServerSocket(portNum);
                 System.out.println(InetAddress.getLocalHost().getHostName());
                 System.out.println("Server started..waiting for the connection at port: \n"+portNum);
@@ -71,8 +73,8 @@ public class Server extends Thread{
     
     public static void main(String args[])
     {
-
-        Server s = new Server();
+        int port = Integer.parseInt(args[0]);
+        Server s = new Server(port);
         s.awaitingConnections();
 
     }

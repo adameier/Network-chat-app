@@ -142,13 +142,14 @@ public class ClientThread extends Thread{
     }
 
 
-    public static void main(String [] args) throws Exception{
-//        String serverName = args[0];
-        //String username = args[1];
-        String username = "MRXADA002";
-        String serverName = "localhost";
-//      int port = Integer.parseInt(args[1]);
-        int port = 5678;
+    public static void main(String [] args) throws Exception
+    {
+          String serverName = args[0];
+          String username = args[1];
+    //    String username = "admin";
+     //   String serverName = "localhost";
+          int port = Integer.parseInt(args[2]);
+      //  int port = 5678;
         ClientThread d = new ClientThread(serverName,port, username);
         String welcome = "You (" + username + ") have successfully joined the chatroom.";
         d.history.add(welcome);
