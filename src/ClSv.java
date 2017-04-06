@@ -109,7 +109,7 @@ public class ClSv extends Thread{
                         }
                         else
                         {
-                        	this.output.writeUTF("You shave successfully sent a request for other clients to download your image.");
+                        	this.output.writeUTF("You have successfully sent a request for other clients to download your image.");
                         }
                     }
                     

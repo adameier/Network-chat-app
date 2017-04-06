@@ -43,3 +43,10 @@ Bugs & Fixes:
 If you run the server twice in the same terminal, you may get a nullpointer exception. Close the terminal, reopen it and start the server again and it will work.
 
 Calling "/download" without a picture being sent causes a broken pipe. Restart the server and clients then make sure an image is available for download before calling the command. 
+
+Any other bugs can be fixed by closing the terminals, and restarting the clients/terminal. 
+
+
+------------------------------------
+
+Report: Use control-scroll forward to zoom on screenshots. 
